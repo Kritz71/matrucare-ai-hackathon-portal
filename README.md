@@ -1,6 +1,6 @@
 # MatruCare AI Hackathon Portal
 
-A MERN application starter for the MatruCare AI National Hackathon 2026 internship assignment. It includes email/password signup, single-use 6-digit email OTP verification, JWT authentication, participant dashboard, profile update, hackathon registration with dynamic team member fields, registration lookup/withdrawal, and Nodemailer email templates.
+A MERN application starter for the MatruCare AI National Hackathon portal .It includes email/password signup, single-use 6-digit email OTP verification, JWT authentication, participant dashboard, profile update, hackathon registration with dynamic team member fields, registration lookup/withdrawal, and Nodemailer email templates.
 
 ## Repository structure
 
