@@ -147,6 +147,12 @@ After deployment, update Render's `CLIENT_URL` to the exact Vercel origin. Never
 - [ ] A user cannot fetch or delete another user's registration.
 - [ ] Test mobile layout at 375px and tablet/desktop widths.
 
-## Notes
+## Demo Video
+
+Watch the complete working demo of MatruCare AI:
+
+[▶ Watch MatruCare AI Demo](https://youtu.be/QSGKJORlguY)
+
+
 
 The frontend currently uses a `mailto:` contact form, which opens the visitor's email application rather than storing messages on the server. Event dates, prize amounts and official social links were not specified in the supplied assignment, so the landing page intentionally avoids inventing them.
