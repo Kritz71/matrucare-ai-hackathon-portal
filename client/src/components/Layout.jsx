@@ -1,0 +1,10 @@
+import { useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Menu, X, Sparkles, ArrowUpRight } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+export default function Layout({ children }) {
+  const { user, logout } = useAuth(); const [open, setOpen] = useState(false); const navigate = useNavigate();
+  const signOut = () => { logout(); setOpen(false); navigate('/'); };
+  const nav = <><NavLink onClick={() => setOpen(false)} to="/">Home</NavLink><a onClick={() => setOpen(false)} href="/#about">About</a><NavLink onClick={() => setOpen(false)} to="/contact">Contact</NavLink>{user ? <><NavLink onClick={() => setOpen(false)} to="/dashboard">Dashboard</NavLink><button className="nav-logout" onClick={signOut}>Logout</button></> : <><NavLink onClick={() => setOpen(false)} to="/login">Login</NavLink><Link onClick={() => setOpen(false)} className="nav-signup" to="/signup">Create account <ArrowUpRight size={15}/></Link></>}</>;
+  return <div className="app-shell"><header className="navbar"><Link to="/" className="brand"><span className="brand-mark"><Sparkles size={19}/></span><span>MatruCare <b>AI</b><small>HACKATHON 2026</small></span></Link><nav className="desktop-nav">{nav}</nav><button className="mobile-toggle" aria-label="Toggle navigation" onClick={() => setOpen(!open)}>{open ? <X/> : <Menu/>}</button></header>{open && <nav className="mobile-nav">{nav}</nav>}<main>{children}</main><footer className="footer"><div><Link to="/" className="brand footer-brand"><span className="brand-mark"><Sparkles size={18}/></span><span>MatruCare <b>AI</b><small>BUILDING TOMORROW, TOGETHER</small></span></Link><p>Ideas that improve lives deserve a bigger stage.</p></div><div className="footer-links"><Link to="/">Home</Link><a href="/#about">About</a><Link to="/contact">Contact</Link><a href="mailto:matrucareai@gmail.com">matrucareai@gmail.com</a></div><div className="footer-bottom">© 2026 MatruCare AI. All rights reserved.</div></footer></div>;
+}

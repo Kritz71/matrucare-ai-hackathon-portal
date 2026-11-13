@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
+import { signup, verifyOtp, resendOtp, login } from '../controllers/authController.js';
+const router = Router();
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: 'draft-7', legacyHeaders: false, message: { message: 'Too many attempts. Please try again later.' } });
+router.post('/signup', authLimiter, signup);
+router.post('/verify-otp', authLimiter, verifyOtp);
+router.post('/resend-otp', authLimiter, resendOtp);
+router.post('/login', authLimiter, login);
+export default router;
