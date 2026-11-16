@@ -1,51 +1,44 @@
 
-import nodemailer from 'nodemailer';
-
-let transporter;
-
-const getSender = () =>
-  process.env.EMAIL_FROM ||
-  `"MatruCare AI" <${process.env.EMAIL_USER}>`;
+const getSender = () => ({
+  name: 'MatruCare AI',
+  email: process.env.BREVO_SENDER_EMAIL,
+});
 
 function isEmailConfigured() {
   return Boolean(
-    process.env.EMAIL_USER && process.env.EMAIL_PASS
+    process.env.BREVO_API_KEY &&
+    process.env.BREVO_SENDER_EMAIL
   );
-}
-
-function getTransporter() {
-  if (!isEmailConfigured()) {
-    throw new Error('Gmail SMTP credentials are not configured.');
-  }
-
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      connectionTimeout: 30000,
-      greetingTimeout: 30000,
-      socketTimeout: 30000,
-    });
-  }
-
-  return transporter;
 }
 
 async function sendEmail(options, developmentOtp = null) {
   try {
-    await getTransporter().sendMail(options);
-    console.log(`Email successfully sent to ${options.to}`);
+    const response = await fetch(
+      'https://api.brevo.com/v3/smtp/email',
+      {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': process.env.BREVO_API_KEY,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(options),
+      }
+    );
+
+    const responseText = await response.text();
+
+    if (!response.ok) {
+      throw new Error(
+        `Brevo API error (${response.status}): ${responseText}`
+      );
+    }
+
+    console.log(
+      `Email successfully sent to ${options.to[0].email}`
+    );
   } catch (error) {
-    console.error('Gmail SMTP error:', {
-      message: error.message,
-      code: error.code,
-      command: error.command,
-    });
+    console.error('Email sending failed:', error.message);
 
     if (process.env.NODE_ENV === 'production') {
       throw error;
@@ -54,14 +47,9 @@ async function sendEmail(options, developmentOtp = null) {
     if (developmentOtp) {
       console.log('\n================================');
       console.log('[DEVELOPMENT MODE] OTP');
-      console.log(`Email: ${options.to}`);
       console.log(`OTP: ${developmentOtp}`);
       console.log('Expires in 10 minutes.');
       console.log('================================\n');
-    } else {
-      console.log(
-        `[DEVELOPMENT MODE] Confirmation email not sent to ${options.to}.`
-      );
     }
   }
 }
@@ -69,25 +57,19 @@ async function sendEmail(options, developmentOtp = null) {
 export async function sendOtpEmail(toEmail, otp) {
   if (!isEmailConfigured()) {
     if (process.env.NODE_ENV === 'production') {
-      throw new Error('Email service is not configured.');
+      throw new Error('Brevo email service is not configured.');
     }
 
-    console.log('\n================================');
-    console.log('[DEVELOPMENT MODE] EMAIL NOT CONFIGURED');
-    console.log(`Email: ${toEmail}`);
-    console.log(`OTP: ${otp}`);
-    console.log('Expires in 10 minutes.');
-    console.log('================================\n');
-
+    console.log(`[DEVELOPMENT MODE] OTP: ${otp}`);
     return;
   }
 
   await sendEmail(
     {
-      from: getSender(),
-      to: toEmail,
+      sender: getSender(),
+      to: [{ email: toEmail }],
       subject: 'Your MatruCare AI verification code',
-      html: `
+      htmlContent: `
         <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:32px;color:#172033">
           <h2>Verify your email</h2>
           <p>Use this one-time verification code to continue:</p>
@@ -116,21 +98,20 @@ export async function sendConfirmationEmail(toEmail, data) {
 
   if (!isEmailConfigured()) {
     if (process.env.NODE_ENV === 'production') {
-      throw new Error('Email service is not configured.');
+      throw new Error('Brevo email service is not configured.');
     }
 
     console.log(
-      `[DEVELOPMENT MODE] Registration confirmation email not sent to ${toEmail}.`
+      `[DEVELOPMENT MODE] Confirmation email not sent to ${toEmail}.`
     );
-
     return;
   }
 
   await sendEmail({
-    from: getSender(),
-    to: toEmail,
+    sender: getSender(),
+    to: [{ email: toEmail }],
     subject: 'Hackathon registration confirmed — MatruCare AI',
-    html: `
+    htmlContent: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:32px;color:#172033">
         <h2>Registration received!</h2>
         <p>Your registration for <b>MatruCare AI National Hackathon 2026</b> has been received.</p>
