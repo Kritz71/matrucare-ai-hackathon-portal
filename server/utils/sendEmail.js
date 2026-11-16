@@ -20,11 +20,16 @@ function getTransporter() {
 
   if (!transporter) {
     transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
+      connectionTimeout: 30000,
+      greetingTimeout: 30000,
+      socketTimeout: 30000,
     });
   }
 
@@ -36,11 +41,15 @@ async function sendEmail(options, developmentOtp = null) {
     await getTransporter().sendMail(options);
     console.log(`Email successfully sent to ${options.to}`);
   } catch (error) {
+    console.error('Gmail SMTP error:', {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+    });
+
     if (process.env.NODE_ENV === 'production') {
       throw error;
     }
-
-    console.error('Gmail SMTP failed:', error.message);
 
     if (developmentOtp) {
       console.log('\n================================');
